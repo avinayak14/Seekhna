@@ -46,7 +46,7 @@
     ```
 
 4.  **Open in Browser**
-    Navigate to `http://localhost:5173` to start learning!
+    Navigate to your local web host to start learning!
 
 ## Browser Support
 This application relies on the **Web Speech API**. For the best experience (especially for Speech Recognition), please use **Google Chrome**, **Microsoft Edge**, or **Safari**.
