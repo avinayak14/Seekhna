@@ -17,8 +17,23 @@ function App() {
   const stats = getStats();
 
   // Library Logic: Filter corpus by level
-  const libraryItems = useMemo(() => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
+
+  const filteredItems = useMemo(() => {
     return corpus.filter(item => item.level === parseInt(filterLevel));
+  }, [filterLevel]);
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+
+  const currentItems = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredItems.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredItems, currentPage]);
+
+  // Reset page when filter changes
+  useMemo(() => {
+    setCurrentPage(1);
   }, [filterLevel]);
 
   const handleStartReview = () => {
@@ -31,6 +46,14 @@ function App() {
 
   const handleAddToLearning = (id) => {
     startLearning(id);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      // Scroll to top of library
+      document.getElementById('library-top')?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -91,8 +114,8 @@ function App() {
           </div>
 
           {/* LIBRARY SECTION */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ margin: 0 }}>Library</h2>
+          <div id="library-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ margin: 0 }}>Library ({filteredItems.length} items)</h2>
             <select
               value={filterLevel}
               onChange={(e) => setFilterLevel(e.target.value)}
@@ -112,8 +135,8 @@ function App() {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {libraryItems.map(item => {
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            {currentItems.map(item => {
               const isLearning = !!srsData[item.id];
               return (
                 <div key={item.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -157,6 +180,31 @@ function App() {
               );
             })}
           </div>
+
+          {/* PAGINATION CONTROLS */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center' }}>
+              <button
+                className="btn"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                style={{ background: 'var(--bg-card)', color: 'white', opacity: currentPage === 1 ? 0.5 : 1 }}
+              >
+                Previous
+              </button>
+              <span style={{ color: 'var(--text-muted)' }}>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="btn"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                style={{ background: 'var(--bg-card)', color: 'white', opacity: currentPage === totalPages ? 0.5 : 1 }}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 
